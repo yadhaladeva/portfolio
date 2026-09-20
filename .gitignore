@@ -1,0 +1,45 @@
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# Java / Maven
+target/
+*.class
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+
+# Node / Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# IDEs / Editor
+.idea/
+*.iml
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Local backend data
+backend/data/
+backend/data-backup/

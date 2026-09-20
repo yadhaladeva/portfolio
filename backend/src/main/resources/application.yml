@@ -1,0 +1,68 @@
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: never
+    include-binding-errors: never
+    include-stacktrace: never
+    include-exception: false
+
+# spring:
+#   application:
+#     name: deva-portfolio-backend
+#   datasource:
+#     url: ${DB_URL:jdbc:h2:file:./data/portfolio_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL}
+#     username: ${DB_USERNAME:sa}
+#     password: ${DB_PASSWORD:}
+#     driver-class-name: ${DB_DRIVER:org.h2.Driver}
+
+spring:
+  application:
+    name: deva-portfolio-backend
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+
+# Springdoc OpenAPI / Swagger Configuration
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: method
+    enabled: true
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:super_secret_jwt_key_for_dev_min_32_characters_long_portfolio_system_2026}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000} # 24 hours in milliseconds
+
+# Initial Admin Seeding Configuration
+# Set via environment variables. If password is empty, seeding is skipped.
+admin:
+  initial:
+    username: ${ADMIN_INITIAL_USERNAME:admin}
+    email: ${ADMIN_INITIAL_EMAIL:admin@devayadhala.local}
+    password: ${ADMIN_INITIAL_PASSWORD:admin123}
+
+# CORS Configuration
+cors:
+  allowed-origins: ${FRONTEND_URL:http://localhost:5173}
+
+# File Upload Configuration
+certification:
+  upload:
+    dir: ${CERTIFICATION_UPLOAD_DIR:./data/uploads/certifications}

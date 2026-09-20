@@ -1,0 +1,30 @@
+server:
+  port: 0
+
+spring:
+  application:
+    name: deva-portfolio-backend-test
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    open-in-view: false
+
+jwt:
+  secret: test_jwt_secret_key_minimum_32_characters_long_for_integration_tests_2026
+  expiration-ms: 3600000
+
+admin:
+  initial:
+    username: testadmin
+    email: testadmin@example.com
+    password: testpassword123
+
+cors:
+  allowed-origins: http://localhost:5173

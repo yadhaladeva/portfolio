@@ -1,0 +1,161 @@
+### =========================================================================
+### DEVA YADHALA PORTFOLIO - SPRING BOOT REST API & JWT TEST SUITE
+### =========================================================================
+### Compatible with:
+### - VS Code (REST Client extension by Huachao Mao)
+### - IntelliJ IDEA / Aqua / WebStorm (Built-in HTTP Client)
+### - Postman / Insomnia (Can import directly or use requests below)
+### =========================================================================
+
+@host = http://localhost:8080
+@contentType = application/json
+@adminUsername = admin
+@adminPassword = admin123
+
+### -------------------------------------------------------------------------
+### 1. SWAGGER UI & OPENAPI DOCUMENTATION (PUBLIC)
+### -------------------------------------------------------------------------
+
+### 1.1 Fetch OpenAPI 3 JSON Schema
+GET {{host}}/v3/api-docs
+Accept: {{contentType}}
+
+### 1.2 Access Swagger UI HTML
+GET {{host}}/swagger-ui/index.html
+
+
+### -------------------------------------------------------------------------
+### 2. PUBLIC PORTFOLIO DATA APIS (PUBLIC - NO AUTH REQUIRED)
+### -------------------------------------------------------------------------
+
+### 2.1 Get All Projects
+GET {{host}}/api/projects
+Accept: {{contentType}}
+
+### 2.2 Get Project by ID
+GET {{host}}/api/projects/1
+Accept: {{contentType}}
+
+### 2.3 Get All Skills
+GET {{host}}/api/skills
+Accept: {{contentType}}
+
+### 2.4 Get Skills Grouped by Category
+GET {{host}}/api/skills/grouped
+Accept: {{contentType}}
+
+### 2.5 Get Work & Internship Experience
+GET {{host}}/api/experience
+Accept: {{contentType}}
+
+### 2.6 Get Certifications & Credentials
+GET {{host}}/api/certifications
+Accept: {{contentType}}
+
+
+### -------------------------------------------------------------------------
+### 3. CONTACT FORM INQUIRIES (PUBLIC)
+### -------------------------------------------------------------------------
+
+### 3.1 Submit Contact Inquiry (Valid)
+# @name submitContact
+POST {{host}}/api/contact
+Content-Type: {{contentType}}
+
+{
+  "name": "Sarah Jenkins",
+  "email": "sarah.jenkins@techrecruiter.com",
+  "subject": "Full Stack Engineer Role Discussion",
+  "message": "Hi Deva, we were very impressed by your portfolio and projects. We would love to discuss a developer opportunity with our engineering team."
+}
+
+### 3.2 Submit Contact Inquiry (Validation Failure Example - Invalid Email)
+POST {{host}}/api/contact
+Content-Type: {{contentType}}
+
+{
+  "name": "",
+  "email": "not-an-email",
+  "subject": "",
+  "message": "Too short"
+}
+
+
+### -------------------------------------------------------------------------
+### 4. AUTHENTICATION & JWT TOKEN GENERATION
+### -------------------------------------------------------------------------
+
+### 4.1 Admin Login (Generates JWT Token)
+# @name login
+POST {{host}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "usernameOrEmail": "{{adminUsername}}",
+  "password": "{{adminPassword}}"
+}
+
+### Auto-captured JWT Bearer token from login response
+@authToken = {{login.response.body.data.token}}
+
+
+### 4.2 Get Current Authenticated Admin Profile (Using JWT)
+GET {{host}}/api/auth/me
+Authorization: Bearer {{authToken}}
+Accept: {{contentType}}
+
+### 4.3 Admin Login (Invalid Credentials - Expects 401 Unauthorized)
+POST {{host}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "usernameOrEmail": "{{adminUsername}}",
+  "password": "wrongPassword999!"
+}
+
+
+### -------------------------------------------------------------------------
+### 5. PROTECTED ADMIN ENDPOINTS (REQUIRES JWT BEARER TOKEN)
+### -------------------------------------------------------------------------
+
+### 5.1 Get Admin Dashboard Analytics & Summary Counts
+GET {{host}}/api/admin/stats
+Authorization: Bearer {{authToken}}
+Accept: {{contentType}}
+
+### 5.2 Get All Contact Inquiries
+GET {{host}}/api/admin/messages
+Authorization: Bearer {{authToken}}
+Accept: {{contentType}}
+
+### 5.3 Mark Contact Message as READ (Replace ID if needed)
+PATCH {{host}}/api/admin/messages/1/status
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "status": "READ"
+}
+
+### 5.4 Mark Contact Message as REPLIED
+PATCH {{host}}/api/admin/messages/1/status
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "status": "REPLIED"
+}
+
+
+### -------------------------------------------------------------------------
+### 6. SECURITY ACCESS CONTROL TESTS (NEGATIVE SCENARIOS)
+### -------------------------------------------------------------------------
+
+### 6.1 Access Admin Stats WITHOUT Token (Expects 401 Unauthorized)
+GET {{host}}/api/admin/stats
+Accept: {{contentType}}
+
+### 6.2 Access Admin Stats with TAMPERED / INVALID Token (Expects 401 Unauthorized)
+GET {{host}}/api/admin/stats
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.tampered.token
+Accept: {{contentType}}
