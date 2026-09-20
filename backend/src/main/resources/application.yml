@@ -54,13 +54,13 @@ jwt:
 # Set via environment variables. If password is empty, seeding is skipped.
 admin:
   initial:
-    username: ${ADMIN_INITIAL_USERNAME:admin}
-    email: ${ADMIN_INITIAL_EMAIL:admin@devayadhala.local}
-    password: ${ADMIN_INITIAL_PASSWORD:admin123}
+    username: ${ADMIN_INITIAL_USERNAME:devayadhala}
+    email: ${ADMIN_INITIAL_EMAIL:devayadhala04@gmail.com}
+    password: ${ADMIN_INITIAL_PASSWORD:BhavyaSri@07}
 
 # CORS Configuration
 cors:
-  allowed-origins: ${FRONTEND_URL:http://localhost:5173}
+  allowed-origins: ${FRONTEND_URL:http://localhost:5173,https://yadhaladevaportfolio.vercel.app}
 
 # File Upload Configuration
 certification:

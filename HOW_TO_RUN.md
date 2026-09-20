@@ -39,8 +39,8 @@ npm.cmd run dev
 | **Admin Portal** | [http://localhost:5173/admin/login](http://localhost:5173/admin/login) | Admin management dashboard |
 
 ### 🔑 Default Admin Credentials
-- **Username:** `admin`
-- **Password:** `admin123`
+- **Username / Email:** `devayadhala04@gmail.com` (or `devayadhala`)
+- **Password:** `BhavyaSri@07`
 
 ---
 
@@ -131,9 +131,9 @@ JWT_SECRET=super_secret_jwt_key_for_dev_min_32_characters_long_portfolio_system_
 JWT_EXPIRATION_MS=86400000
 
 # Initial Admin Credentials
-ADMIN_INITIAL_USERNAME=admin
-ADMIN_INITIAL_EMAIL=admin@devayadhala.local
-ADMIN_INITIAL_PASSWORD=admin123
+ADMIN_INITIAL_USERNAME=devayadhala
+ADMIN_INITIAL_EMAIL=devayadhala04@gmail.com
+ADMIN_INITIAL_PASSWORD=BhavyaSri@07
 
 # Ports & Origins
 PORT=8080

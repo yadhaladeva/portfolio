@@ -46,10 +46,10 @@ public class DataInitializer implements CommandLineRunner {
     private final AboutContentRepository aboutContentRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${admin.initial.username:admin}")
+    @Value("${admin.initial.username:devayadhala}")
     private String initialAdminUsername;
 
-    @Value("${admin.initial.email:admin@devayadhala.local}")
+    @Value("${admin.initial.email:devayadhala04@gmail.com}")
     private String initialAdminEmail;
 
     @Value("${admin.initial.password:}")
@@ -73,16 +73,28 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void seedAdminUser() {
-        if (adminUserRepository.count() == 0 && StringUtils.hasText(initialAdminPassword)) {
-            log.info("Seeding initial administrator user '{}' from environment configuration...", initialAdminUsername);
-            AdminUser admin = AdminUser.builder()
-                    .username(initialAdminUsername.trim())
-                    .email(initialAdminEmail.trim())
-                    .passwordHash(passwordEncoder.encode(initialAdminPassword))
-                    .role("ROLE_ADMIN")
-                    .build();
-            adminUserRepository.save(admin);
-            log.info("Initial admin user initialized successfully.");
+        if (StringUtils.hasText(initialAdminPassword)) {
+            if (adminUserRepository.count() == 0) {
+                log.info("Seeding initial administrator user '{}' from environment configuration...", initialAdminUsername);
+                AdminUser admin = AdminUser.builder()
+                        .username(initialAdminUsername.trim())
+                        .email(initialAdminEmail.trim())
+                        .passwordHash(passwordEncoder.encode(initialAdminPassword))
+                        .role("ROLE_ADMIN")
+                        .build();
+                adminUserRepository.save(admin);
+                log.info("Initial admin user initialized successfully.");
+            } else {
+                List<AdminUser> admins = adminUserRepository.findAll();
+                if (!admins.isEmpty()) {
+                    AdminUser admin = admins.get(0);
+                    admin.setUsername(initialAdminUsername.trim());
+                    admin.setEmail(initialAdminEmail.trim());
+                    admin.setPasswordHash(passwordEncoder.encode(initialAdminPassword));
+                    adminUserRepository.save(admin);
+                    log.info("Admin user credentials updated successfully to '{}'.", initialAdminEmail);
+                }
+            }
         }
     }
 

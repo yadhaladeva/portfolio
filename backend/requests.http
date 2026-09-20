@@ -9,8 +9,8 @@
 
 @host = http://localhost:8080
 @contentType = application/json
-@adminUsername = admin
-@adminPassword = admin123
+@adminUsername = devayadhala04@gmail.com
+@adminPassword = BhavyaSri@07
 
 ### -------------------------------------------------------------------------
 ### 1. SWAGGER UI & OPENAPI DOCUMENTATION (PUBLIC)
