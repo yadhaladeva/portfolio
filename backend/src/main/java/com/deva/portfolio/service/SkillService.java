@@ -34,9 +34,19 @@ public class SkillService {
     public List<SkillGroupResponse> getSkillsGroupedByCategory() {
         List<Skill> allSkills = skillRepository.findAllByOrderByDisplayOrderAsc();
 
-        // Preserve logical category order: Programming, Framework, Web, Database, Tools, Soft skills
+        // Preserve logical category order
         List<String> preferredOrder = List.of(
-                "Programming", "Framework", "Web", "Database", "Tools", "Soft skills"
+                "Frontend",
+                "Backend & Frameworks",
+                "Programming",
+                "Databases",
+                "Tools & Platforms",
+                "Engineering Skills",
+                "Framework",
+                "Web",
+                "Database",
+                "Tools",
+                "Soft skills"
         );
 
         Map<String, List<SkillResponse>> grouped = allSkills.stream()
@@ -53,8 +63,10 @@ public class SkillService {
                         .skills(entry.getValue())
                         .build())
                 .sorted(Comparator.comparingInt(g -> {
-                    int index = preferredOrder.indexOf(g.getCategory());
-                    return index >= 0 ? index : 999;
+                    return g.getSkills().stream()
+                            .mapToInt(s -> s.getDisplayOrder() != null ? s.getDisplayOrder() : 999)
+                            .min()
+                            .orElse(999);
                 }))
                 .collect(Collectors.toList());
     }

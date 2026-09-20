@@ -100,16 +100,9 @@ public class DataInitializer implements CommandLineRunner {
 
     private void seedSkills() {
         if (skillRepository.count() > 0) {
-            boolean hasOldCategories = skillRepository.findAll().stream()
-                    .anyMatch(s -> "Soft skills".equalsIgnoreCase(s.getCategory()) || "Framework".equalsIgnoreCase(s.getCategory()) || "Web".equalsIgnoreCase(s.getCategory()));
-            if (hasOldCategories) {
-                log.info("Refreshing skills with updated recruiter-friendly categories...");
-                skillRepository.deleteAll();
-            } else {
-                return;
-            }
+            return;
         }
-        log.info("Seeding resume-verified skills...");
+        log.info("Seeding initial resume-verified skills...");
 
         List<Skill> skills = List.of(
                 // Programming
