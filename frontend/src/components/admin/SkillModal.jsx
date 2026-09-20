@@ -9,8 +9,13 @@ export const SkillModal = ({ isOpen, onClose, onSave, skill = null, isLoading = 
     displayOrder: 0,
   });
 
-  const categories = [
+  const standardCategories = [
+    'Frontend',
+    'Backend & Frameworks',
     'Programming',
+    'Databases',
+    'Tools & Platforms',
+    'Engineering Skills',
     'Framework',
     'Web',
     'Database',
@@ -18,33 +23,60 @@ export const SkillModal = ({ isOpen, onClose, onSave, skill = null, isLoading = 
     'Soft skills',
   ];
 
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
+  const [customCategoryName, setCustomCategoryName] = useState('');
+
   useEffect(() => {
     if (skill) {
+      const cat = skill.category || 'Frontend';
+      const isKnown = standardCategories.includes(cat);
       setFormData({
         name: skill.name || '',
-        category: skill.category || 'Programming',
+        category: cat,
         proficiency: skill.proficiency || 85,
         displayOrder: skill.displayOrder || 0,
       });
+      setIsCustomCategory(!isKnown);
+      setCustomCategoryName(!isKnown ? cat : '');
     } else {
       setFormData({
         name: '',
-        category: 'Programming',
+        category: 'Frontend',
         proficiency: 85,
         displayOrder: 0,
       });
+      setIsCustomCategory(false);
+      setCustomCategoryName('');
     }
   }, [skill, isOpen]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === 'categorySelect') {
+      if (value === '__CUSTOM__') {
+        setIsCustomCategory(true);
+        setFormData((prev) => ({ ...prev, category: customCategoryName || '' }));
+      } else {
+        setIsCustomCategory(false);
+        setFormData((prev) => ({ ...prev, category: value }));
+      }
+    } else if (name === 'customCategory') {
+      setCustomCategoryName(value);
+      setFormData((prev) => ({ ...prev, category: value }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const finalCategory = isCustomCategory ? customCategoryName.trim() : formData.category;
+    if (!finalCategory) {
+      return;
+    }
     onSave({
       ...formData,
+      category: finalCategory,
       proficiency: parseInt(formData.proficiency, 10) || 85,
       displayOrder: parseInt(formData.displayOrder, 10) || 0,
     });
@@ -68,7 +100,7 @@ export const SkillModal = ({ isOpen, onClose, onSave, skill = null, isLoading = 
             required
             value={formData.name}
             onChange={handleChange}
-            placeholder="e.g. Java, PostgreSQL, Spring Boot"
+            placeholder="e.g. React, JavaScript, HTML, CSS, Tailwind CSS"
             className="w-full px-3.5 py-2 text-sm bg-dark-800 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
           />
         </div>
@@ -78,18 +110,30 @@ export const SkillModal = ({ isOpen, onClose, onSave, skill = null, isLoading = 
             Category <span className="text-rose-400">*</span>
           </label>
           <select
-            name="category"
-            required
-            value={formData.category}
+            name="categorySelect"
+            value={isCustomCategory ? '__CUSTOM__' : formData.category}
             onChange={handleChange}
             className="w-full px-3.5 py-2 text-sm bg-dark-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-emerald-500"
           >
-            {categories.map((cat) => (
+            {standardCategories.map((cat) => (
               <option key={cat} value={cat}>
                 {cat}
               </option>
             ))}
+            <option value="__CUSTOM__">+ Custom Category...</option>
           </select>
+
+          {isCustomCategory && (
+            <input
+              type="text"
+              name="customCategory"
+              required
+              value={customCategoryName}
+              onChange={handleChange}
+              placeholder="Enter custom category name (e.g. Cloud, Mobile)"
+              className="w-full mt-2 px-3.5 py-2 text-sm bg-dark-800 border border-emerald-500/50 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
+            />
+          )}
         </div>
 
         <div>
