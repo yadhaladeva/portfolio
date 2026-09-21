@@ -18,9 +18,13 @@ export const CertificateViewerModal = ({ isOpen, onClose, certification }) => {
   if (!certification) return null;
 
   // Determine the certificate URL: either local preview (Blob / Object URL) or public API endpoint
-  const certUrl = certification.previewUrl
+  const rawCertUrl = certification.previewUrl
     ? certification.previewUrl
     : (certification.certificateUrl || (certification.id ? publicApi.getCertificateViewUrl(certification.id) : ''));
+
+  const certUrl = rawCertUrl && !rawCertUrl.startsWith('blob:') && !rawCertUrl.startsWith('data:') && !rawCertUrl.startsWith('http')
+    ? publicApi.getFullUrl(rawCertUrl)
+    : rawCertUrl;
 
   const fileName = certification.fileName || certification.originalFileName || '';
   const isPdf = certification.contentType?.includes('pdf') ||

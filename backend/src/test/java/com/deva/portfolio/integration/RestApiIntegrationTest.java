@@ -32,6 +32,21 @@ class RestApiIntegrationTest {
     private JwtTokenProvider jwtTokenProvider;
 
     @Test
+    @DisplayName("Public GET /api/public/portfolio returns consolidated bundle without authentication")
+    void testPublicPortfolioBundleEndpoint() throws Exception {
+        mockMvc.perform(get("/api/public/portfolio"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.header.brandName").isNotEmpty())
+                .andExpect(jsonPath("$.data.hero.name").isNotEmpty())
+                .andExpect(jsonPath("$.data.about.badge").isNotEmpty())
+                .andExpect(jsonPath("$.data.skills").isArray())
+                .andExpect(jsonPath("$.data.experience").isArray())
+                .andExpect(jsonPath("$.data.projects").isArray())
+                .andExpect(jsonPath("$.data.certifications").isArray());
+    }
+
+    @Test
     @DisplayName("Public GET /api/projects is accessible without authentication")
     void testPublicProjectsEndpoint() throws Exception {
         mockMvc.perform(get("/api/projects"))

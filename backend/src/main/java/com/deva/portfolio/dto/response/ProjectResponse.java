@@ -23,6 +23,8 @@ public class ProjectResponse {
     private String title;
     private String description;
     private List<String> technologies;
+    @Builder.Default
+    private List<String> features = new java.util.ArrayList<>();
     private String githubUrl;
     private String demoUrl;
     private String imageUrl;
@@ -42,11 +44,16 @@ public class ProjectResponse {
                 .collect(Collectors.toList())
                 : List.of();
 
+        List<String> featureList = project.getFeatures() != null
+                ? new java.util.ArrayList<>(project.getFeatures())
+                : List.of();
+
         return ProjectResponse.builder()
                 .id(project.getId())
                 .title(project.getTitle())
                 .description(project.getDescription())
                 .technologies(techNames)
+                .features(featureList)
                 .githubUrl(project.getGithubUrl())
                 .demoUrl(project.getDemoUrl())
                 .imageUrl(project.getImageUrl())

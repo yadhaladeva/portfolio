@@ -15,7 +15,8 @@ import {
   Save,
   RotateCcw,
   Eye,
-  Layers
+  Layers,
+  CheckCircle2
 } from 'lucide-react';
 
 const DEFAULT_PROJECTS_HEADER = {
@@ -303,11 +304,19 @@ export const AdminProjectsPage = () => {
                         <p className="text-slate-400 line-clamp-2 mt-1 text-xs">
                           {project.description}
                         </p>
-                        {project.tableauUrl && (
-                          <span className="inline-block mt-1 text-[11px] text-cyan-400 font-mono">
-                            Tableau URL configured
-                          </span>
-                        )}
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                          {project.tableauUrl && (
+                            <span className="text-[11px] text-cyan-400 font-mono">
+                              Tableau URL configured
+                            </span>
+                          )}
+                          {project.features && project.features.length > 0 && (
+                            <span className="inline-flex items-center gap-1 text-[11px] text-indigo-400 font-mono">
+                              <CheckCircle2 className="w-3 h-3" />
+                              <span>{project.features.length} features</span>
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-wrap gap-1 max-w-xs">

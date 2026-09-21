@@ -7,6 +7,7 @@ export const ProjectModal = ({ isOpen, onClose, onSave, project = null, isLoadin
     title: '',
     description: '',
     technologies: [],
+    features: [],
     githubUrl: '',
     demoUrl: '',
     tableauUrl: '',
@@ -15,6 +16,7 @@ export const ProjectModal = ({ isOpen, onClose, onSave, project = null, isLoadin
   });
 
   const [techInput, setTechInput] = useState('');
+  const [featureInput, setFeatureInput] = useState('');
 
   useEffect(() => {
     if (project) {
@@ -22,6 +24,7 @@ export const ProjectModal = ({ isOpen, onClose, onSave, project = null, isLoadin
         title: project.title || '',
         description: project.description || '',
         technologies: project.technologies ? [...project.technologies] : [],
+        features: project.features ? [...project.features] : [],
         githubUrl: project.githubUrl || '',
         demoUrl: project.demoUrl || '',
         tableauUrl: project.tableauUrl || '',
@@ -33,6 +36,7 @@ export const ProjectModal = ({ isOpen, onClose, onSave, project = null, isLoadin
         title: '',
         description: '',
         technologies: [],
+        features: [],
         githubUrl: '',
         demoUrl: '',
         tableauUrl: '',
@@ -41,6 +45,7 @@ export const ProjectModal = ({ isOpen, onClose, onSave, project = null, isLoadin
       });
     }
     setTechInput('');
+    setFeatureInput('');
   }, [project, isOpen]);
 
   const handleChange = (e) => {
@@ -68,6 +73,24 @@ export const ProjectModal = ({ isOpen, onClose, onSave, project = null, isLoadin
     setFormData((prev) => ({
       ...prev,
       technologies: prev.technologies.filter((t) => t !== techToRemove),
+    }));
+  };
+
+  const handleAddFeature = (e) => {
+    e?.preventDefault();
+    if (!featureInput.trim()) return;
+    const cleanFeat = featureInput.trim();
+    setFormData((prev) => ({
+      ...prev,
+      features: [...prev.features, cleanFeat],
+    }));
+    setFeatureInput('');
+  };
+
+  const handleRemoveFeature = (indexToRemove) => {
+    setFormData((prev) => ({
+      ...prev,
+      features: prev.features.filter((_, idx) => idx !== indexToRemove),
     }));
   };
 
@@ -160,11 +183,75 @@ export const ProjectModal = ({ isOpen, onClose, onSave, project = null, isLoadin
                   <button
                     type="button"
                     onClick={() => handleRemoveTech(tech)}
-                    className="hover:text-rose-400 transition-colors"
+                    className="hover:text-rose-400 transition-colors cursor-pointer"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </span>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Key Features & Architecture Manager */}
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-xs font-semibold text-slate-300">
+              Key Features & Architecture (Bullet Points)
+            </label>
+            <span className="text-[11px] text-indigo-400 font-mono">
+              {formData.features.length} {formData.features.length === 1 ? 'feature' : 'features'}
+            </span>
+          </div>
+
+          <div className="flex gap-2 mb-2">
+            <input
+              type="text"
+              value={featureInput}
+              onChange={(e) => setFeatureInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddFeature();
+                }
+              }}
+              placeholder="e.g. RESTful API architecture built with Java and Spring Boot (Press Enter)"
+              className="flex-1 px-3.5 py-2 text-sm bg-dark-800 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+            />
+            <button
+              type="button"
+              onClick={handleAddFeature}
+              className="px-4 py-2 text-xs font-semibold bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Feature</span>
+            </button>
+          </div>
+
+          <div className="space-y-1.5 min-h-[44px] max-h-48 overflow-y-auto p-2.5 bg-dark-900 rounded-xl border border-slate-800">
+            {formData.features.length === 0 ? (
+              <span className="text-xs text-slate-500 italic p-1 block">
+                No key features added yet. These will appear in the project details popup modal.
+              </span>
+            ) : (
+              formData.features.map((feat, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-start justify-between gap-2 p-2 rounded-lg bg-dark-800/80 border border-slate-700/60 text-xs text-slate-200 group hover:border-slate-600 transition-colors"
+                >
+                  <div className="flex items-start gap-2 flex-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
+                    <span className="leading-relaxed">{feat}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveFeature(idx)}
+                    className="text-slate-500 hover:text-rose-400 p-1 transition-colors rounded cursor-pointer"
+                    title="Remove feature"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               ))
             )}
           </div>

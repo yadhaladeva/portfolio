@@ -190,8 +190,44 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void seedProjects() {
-        if (projectRepository.count() > 0) return;
-        log.info("Seeding resume-verified projects with normalized technologies...");
+        if (projectRepository.count() > 0) {
+            // Auto-backfill features for existing seeded projects if empty
+            List<Project> existing = projectRepository.findAll();
+            for (Project p : existing) {
+                if (p.getFeatures() == null || p.getFeatures().isEmpty()) {
+                    String title = (p.getTitle() != null ? p.getTitle() : "").toLowerCase();
+                    if (title.contains("user data management")) {
+                        p.setFeatures(new java.util.ArrayList<>(List.of(
+                                "RESTful API architecture built with Java and Spring Boot",
+                                "Relational data persistence and schema management in PostgreSQL",
+                                "Dynamic user views rendered via server-side JSP",
+                                "Automated Excel spreadsheet generation using Apache POI",
+                                "Dynamic PDF document and report export utilizing OpenPDF"
+                        )));
+                        projectRepository.save(p);
+                    } else if (title.contains("retail sales") || title.contains("data warehouse")) {
+                        p.setFeatures(new java.util.ArrayList<>(List.of(
+                                "Automated data extraction, cleaning, and preprocessing with Pandas",
+                                "Structured relational data warehouse storage in SQLite",
+                                "Analytical SQL queries for aggregation, sales metrics, and performance tracking",
+                                "Visual sales distribution charts and trend reporting with Matplotlib"
+                        )));
+                        projectRepository.save(p);
+                    } else if (title.contains("accounts receivable") || title.contains("receivable analytics")) {
+                        p.setFeatures(new java.util.ArrayList<>(List.of(
+                                "Real-time financial KPI tracking and accounts receivable monitoring",
+                                "Invoice aging analysis and overdue payment tracking",
+                                "Payment collection trend forecasting and cash flow analysis",
+                                "Customer credit risk profiling and exposure segmentation",
+                                "Interactive visual dashboard and drill-down reporting via Tableau"
+                        )));
+                        projectRepository.save(p);
+                    }
+                }
+            }
+            return;
+        }
+        log.info("Seeding resume-verified projects with normalized technologies and key features...");
 
         // 1. User Data Management System
         // Technologies: Java, Spring Boot, PostgreSQL, JSP, Apache POI, OpenPDF, REST APIs
@@ -203,6 +239,13 @@ public class DataInitializer implements CommandLineRunner {
                 .title("User Data Management System")
                 .description("A comprehensive user data management application built with Java and Spring Boot providing secure RESTful endpoints, persistent PostgreSQL storage, dynamic JSP views, and automated document generation supporting Excel exports via Apache POI and PDF report generation with OpenPDF.")
                 .technologies(techProject1)
+                .features(new java.util.ArrayList<>(List.of(
+                        "RESTful API architecture built with Java and Spring Boot",
+                        "Relational data persistence and schema management in PostgreSQL",
+                        "Dynamic user views rendered via server-side JSP",
+                        "Automated Excel spreadsheet generation using Apache POI",
+                        "Dynamic PDF document and report export utilizing OpenPDF"
+                )))
                 .featured(true)
                 .displayOrder(1)
                 .build();
@@ -217,6 +260,12 @@ public class DataInitializer implements CommandLineRunner {
                 .title("Retail Sales Data Warehouse & Visualization Project")
                 .description("An end-to-end retail sales analytics and data warehousing solution implementing automated data extraction, cleaning, and structuring with Pandas, relational storage in SQLite, complex analytical SQL queries, and visual sales distribution reporting using Matplotlib.")
                 .technologies(techProject2)
+                .features(new java.util.ArrayList<>(List.of(
+                        "Automated data extraction, cleaning, and preprocessing with Pandas",
+                        "Structured relational data warehouse storage in SQLite",
+                        "Analytical SQL queries for aggregation, sales metrics, and performance tracking",
+                        "Visual sales distribution charts and trend reporting with Matplotlib"
+                )))
                 .featured(true)
                 .displayOrder(2)
                 .build();
@@ -231,12 +280,19 @@ public class DataInitializer implements CommandLineRunner {
                 .title("Accounts Receivable Analytics Dashboard")
                 .description("An analytical business intelligence dashboard designed for monitoring financial receivables, providing real-time KPI tracking, aging analysis, payment trend forecasting, overdue monitoring, and customer credit risk profiling to optimize cash flow operations.")
                 .technologies(techProject3)
+                .features(new java.util.ArrayList<>(List.of(
+                        "Real-time financial KPI tracking and accounts receivable monitoring",
+                        "Invoice aging analysis and overdue payment tracking",
+                        "Payment collection trend forecasting and cash flow analysis",
+                        "Customer credit risk profiling and exposure segmentation",
+                        "Interactive visual dashboard and drill-down reporting via Tableau"
+                )))
                 .featured(true)
                 .displayOrder(3)
                 .build();
 
         projectRepository.saveAll(List.of(p1, p2, p3));
-        log.info("Seeded {} projects with normalized relational tags.", 3);
+        log.info("Seeded {} projects with normalized relational tags and architecture features.", 3);
     }
 
     private void seedCertifications() {

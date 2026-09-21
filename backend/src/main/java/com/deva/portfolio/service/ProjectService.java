@@ -46,6 +46,7 @@ public class ProjectService {
                 .title(request.getTitle().trim())
                 .description(request.getDescription().trim())
                 .technologies(resolvedTechnologies)
+                .features(request.getFeatures() != null ? new java.util.ArrayList<>(request.getFeatures()) : new java.util.ArrayList<>())
                 .githubUrl(request.getGithubUrl())
                 .demoUrl(request.getDemoUrl())
                 .imageUrl(request.getImageUrl())
@@ -68,6 +69,10 @@ public class ProjectService {
         project.setTitle(request.getTitle().trim());
         project.setDescription(request.getDescription().trim());
         project.setTechnologies(resolvedTechnologies);
+        if (request.getFeatures() != null) {
+            project.getFeatures().clear();
+            project.getFeatures().addAll(request.getFeatures());
+        }
         project.setGithubUrl(request.getGithubUrl());
         project.setDemoUrl(request.getDemoUrl());
         project.setImageUrl(request.getImageUrl());

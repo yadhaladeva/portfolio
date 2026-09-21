@@ -41,6 +41,13 @@ public class Project {
     @Builder.Default
     private Set<Technology> technologies = new HashSet<>();
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "project_features", joinColumns = @JoinColumn(name = "project_id"))
+    @OrderColumn(name = "feature_order")
+    @Column(name = "feature_text", length = 500)
+    @Builder.Default
+    private java.util.List<String> features = new java.util.ArrayList<>();
+
     @Column(name = "github_url", length = 300)
     private String githubUrl;
 

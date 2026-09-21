@@ -27,6 +27,9 @@ public class ProjectRequest {
     @Builder.Default
     private Set<String> technologies = new HashSet<>();
 
+    @Builder.Default
+    private java.util.List<String> features = new java.util.ArrayList<>();
+
     private String githubUrl;
     private String demoUrl;
     private String imageUrl;

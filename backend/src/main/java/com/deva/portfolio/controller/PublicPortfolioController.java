@@ -20,11 +20,37 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PublicPortfolioController {
 
+    private final HeaderService headerService;
+    private final HeroService heroService;
+    private final AboutService aboutService;
     private final ProjectService projectService;
     private final SkillService skillService;
     private final ExperienceService experienceService;
     private final CertificationService certificationService;
     private final SectionHeaderService sectionHeaderService;
+    private final ContactSettingsService contactSettingsService;
+
+    @Operation(summary = "Get Full Public Portfolio Bundle", description = "Fetches the entire public portfolio data (Header, Hero, About, Skills, Experience, Projects, Certifications, Contact) in a single consolidated JSON response.")
+    @GetMapping({"/public/portfolio", "/portfolio/bundle"})
+    public ResponseEntity<ApiResponse<PortfolioBundleResponse>> getPublicPortfolio() {
+        PortfolioBundleResponse bundle = PortfolioBundleResponse.builder()
+                .header(headerService.getHeaderConfig())
+                .hero(heroService.getHeroContent())
+                .about(aboutService.getAboutContent(true))
+                .skillsHeader(sectionHeaderService.getHeader("SKILLS"))
+                .groupedSkills(skillService.getSkillsGroupedByCategory())
+                .skills(skillService.getAllSkills())
+                .experienceHeader(sectionHeaderService.getHeader("EXPERIENCE"))
+                .experience(experienceService.getAllExperience())
+                .projectsHeader(sectionHeaderService.getHeader("PROJECTS"))
+                .projects(projectService.getAllProjects())
+                .certificationsHeader(sectionHeaderService.getHeader("CERTIFICATIONS"))
+                .certifications(certificationService.getAllCertifications())
+                .contact(contactSettingsService.getContactSettings())
+                .build();
+
+        return ResponseEntity.ok(ApiResponse.success(bundle));
+    }
 
     @Operation(summary = "Get Section Header by Key", description = "Fetches published badge text and description for a specific section (SKILLS, EXPERIENCE, PROJECTS, CERTIFICATIONS).")
     @GetMapping({"/skills/header", "/experience/header", "/projects/header", "/certifications/header", "/section-header/{sectionKey}"})

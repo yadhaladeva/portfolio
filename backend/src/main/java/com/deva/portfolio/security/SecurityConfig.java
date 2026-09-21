@@ -69,7 +69,7 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
-                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
+                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, authException) -> {
@@ -90,6 +90,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/contact", "/api/contact/**").permitAll()
 
                         // Public Read APIs for Portfolio Presentation
+                        .requestMatchers(HttpMethod.GET, "/api/public/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/portfolio/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/header/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/hero/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/about/**").permitAll()

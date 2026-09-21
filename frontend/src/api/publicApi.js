@@ -1,6 +1,31 @@
 import apiClient from './apiClient';
 
+export const getFullApiUrl = (endpoint) => {
+  const base = import.meta.env.VITE_API_BASE_URL || '/api';
+  if (!endpoint) return base;
+
+  // If base is a full URL (e.g. 'https://backend.onrender.com/api' or 'http://localhost:8080/api')
+  if (base.startsWith('http://') || base.startsWith('https://')) {
+    const cleanBase = base.replace(/\/+$/, '');
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    if (cleanBase.endsWith('/api') && cleanEndpoint.startsWith('/api/')) {
+      return cleanBase + cleanEndpoint.substring(4);
+    }
+    return cleanBase + cleanEndpoint;
+  }
+
+  // If base is relative ('/api')
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  return cleanEndpoint;
+};
+
 export const publicApi = {
+  // Consolidated Full Portfolio Bundle (High Performance)
+  getPublicPortfolio: async () => {
+    const res = await apiClient.get('/public/portfolio');
+    return res.data.data;
+  },
+
   // Header / Navigation Content
   getHeader: async () => {
     const res = await apiClient.get('/header');
@@ -66,7 +91,7 @@ export const publicApi = {
     const res = await apiClient.get('/certifications');
     return res.data.data;
   },
-  getCertificateViewUrl: (id) => `/api/certifications/${id}/certificate`,
+  getCertificateViewUrl: (id) => getFullApiUrl(`/api/certifications/${id}/certificate`),
 
   // Contact Section Settings & Inquiries
   getContactSettings: async () => {
@@ -83,6 +108,7 @@ export const publicApi = {
     const res = await apiClient.get('/resume');
     return res.data.data;
   },
-  getResumeDownloadUrl: () => '/api/resume/download',
-  getResumePreviewUrl: () => '/api/resume/preview'
+  getResumeDownloadUrl: () => getFullApiUrl('/api/resume/download'),
+  getResumePreviewUrl: () => getFullApiUrl('/api/resume/preview'),
+  getFullUrl: (endpoint) => getFullApiUrl(endpoint)
 };

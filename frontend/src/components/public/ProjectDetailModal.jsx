@@ -36,7 +36,9 @@ export const ProjectDetailModal = ({ project, isOpen, onClose }) => {
     return null;
   };
 
-  const features = getProjectFeatures(project);
+  const features = (project.features && project.features.length > 0)
+    ? project.features
+    : getProjectFeatures(project);
   const hasLinks = Boolean(project.githubUrl || project.demoUrl || project.tableauUrl);
 
   return (

@@ -1,6 +1,29 @@
 import React from 'react';
 import { Briefcase, Calendar, MapPin, Building2, CheckCircle } from 'lucide-react';
 
+const parseBulletPoints = (text) => {
+  if (!text) return [];
+
+  // Check if text contains bullet characters (•, \u2022)
+  if (text.includes('•')) {
+    return text
+      .split('•')
+      .map(point => point.trim())
+      .filter(point => point.length > 0);
+  }
+
+  // If text contains newlines
+  if (text.includes('\n')) {
+    return text
+      .split('\n')
+      .map(line => line.replace(/^[\s\-*•]+/, '').trim())
+      .filter(line => line.length > 0);
+  }
+
+  // Fallback: single item
+  return [text.trim()];
+};
+
 export const ExperienceSection = ({ experience = [], header }) => {
   const badgeText = header?.badgeText || 'EXPERIENCE';
   const description = header?.description || 'Practical software engineering and technical roles across enterprise and engineering organizations.';
@@ -54,9 +77,15 @@ export const ExperienceSection = ({ experience = [], header }) => {
                   </div>
                 </div>
 
-                <p className="text-sm text-slate-300 leading-relaxed">
-                  {item.description}
-                </p>
+                {/* Bullet Points List */}
+                <ul className="space-y-2.5 text-sm text-slate-300 leading-relaxed">
+                  {parseBulletPoints(item.description).map((point, idx) => (
+                    <li key={idx} className="flex items-start gap-2.5">
+                      <span className="text-slate-400 font-bold select-none mt-0.5 leading-none">•</span>
+                      <span className="flex-1">{point}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           ))}
