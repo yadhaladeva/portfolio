@@ -62,7 +62,20 @@ admin:
 cors:
   allowed-origins: ${FRONTEND_URL:http://localhost:5173,https://yadhaladevaportfolio.vercel.app}
 
-# File Upload Configuration
+# File Upload Configuration (Local Fallback)
 certification:
   upload:
     dir: ${CERTIFICATION_UPLOAD_DIR:./data/uploads/certifications}
+
+resume:
+  upload:
+    dir: ${RESUME_UPLOAD_DIR:./data/uploads/resume}
+
+# Supabase Cloud Storage (Persistent File Storage for Render/Cloud Deployments)
+supabase:
+  url: ${SUPABASE_URL:}
+  key: ${SUPABASE_SERVICE_ROLE_KEY:${SUPABASE_KEY:}}
+  bucket:
+    certifications: ${SUPABASE_BUCKET_CERTIFICATIONS:portfolio-certifications}
+    resumes: ${SUPABASE_BUCKET_RESUMES:portfolio-resumes}
+

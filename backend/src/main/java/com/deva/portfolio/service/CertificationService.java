@@ -46,6 +46,7 @@ public class CertificationService {
     );
 
     private final CertificationRepository certificationRepository;
+    private final SupabaseStorageService supabaseStorageService;
 
     @Value("${certification.upload.dir:./data/uploads/certifications}")
     private String uploadDir;
@@ -57,10 +58,9 @@ public class CertificationService {
         this.storageLocation = Paths.get(uploadDir).toAbsolutePath().normalize();
         try {
             Files.createDirectories(this.storageLocation);
-            log.info("Certifications storage initialized at: {}", this.storageLocation);
+            log.info("Certifications local storage initialized at: {}", this.storageLocation);
         } catch (IOException e) {
-            log.error("Could not initialize certifications storage directory: {}", e.getMessage());
-            throw new ApiException("Could not initialize certifications storage directory", HttpStatus.INTERNAL_SERVER_ERROR);
+            log.warn("Could not initialize certifications local directory: {}", e.getMessage());
         }
     }
 
@@ -186,19 +186,36 @@ public class CertificationService {
             throw new ResourceNotFoundException("No certificate file is attached to certification ID " + id);
         }
 
+        String contentType = cert.getContentType() != null ? cert.getContentType() : "application/octet-stream";
+        String originalName = cert.getOriginalFileName() != null ? cert.getOriginalFileName() : "certificate";
+
+        // Check if stored in Supabase Cloud Storage
+        if (SupabaseStorageService.isSupabaseStoragePath(cert.getStoragePath())) {
+            String[] parsed = SupabaseStorageService.parseSupabaseUri(cert.getStoragePath());
+            if (parsed != null && supabaseStorageService.isConfigured()) {
+                byte[] bytes = supabaseStorageService.downloadFile(parsed[0], parsed[1]);
+                Resource resource = new org.springframework.core.io.ByteArrayResource(bytes) {
+                    @Override
+                    public String getFilename() {
+                        return originalName;
+                    }
+                };
+                return new ResourceAndMetadata(resource, contentType, originalName);
+            }
+        }
+
+        // Local storage fallback
         try {
             Path filePath = Paths.get(cert.getStoragePath()).normalize();
-            if (!filePath.startsWith(this.storageLocation)) {
+            if (this.storageLocation != null && !filePath.startsWith(this.storageLocation)) {
                 throw new ApiException("Access to requested certificate path is denied.", HttpStatus.FORBIDDEN);
             }
 
             Resource resource = new UrlResource(filePath.toUri());
             if (resource.exists() && resource.isReadable()) {
-                String contentType = cert.getContentType() != null ? cert.getContentType() : "application/octet-stream";
-                String originalName = cert.getOriginalFileName() != null ? cert.getOriginalFileName() : "certificate";
                 return new ResourceAndMetadata(resource, contentType, originalName);
             } else {
-                throw new ResourceNotFoundException("Certificate file not found on disk for certification ID " + id);
+                throw new ResourceNotFoundException("Certificate file not found for certification ID " + id);
             }
         } catch (MalformedURLException e) {
             throw new ResourceNotFoundException("Certificate file location is invalid.");
@@ -238,16 +255,26 @@ public class CertificationService {
         // Validate Magic Bytes / File Signatures
         validateFileSignature(file, extension);
 
-        try {
-            String safeStorageName = "certificate_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8) + "." + extension;
-            Path targetLocation = this.storageLocation.resolve(safeStorageName).normalize();
+        String safeStorageName = "certificate_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8) + "." + extension;
 
-            // Safety check against path traversal
+        try {
+            byte[] fileBytes = file.getBytes();
+
+            // 1. If Supabase Storage is configured, store persistently in Supabase Storage
+            if (supabaseStorageService.isConfigured()) {
+                String bucket = supabaseStorageService.getCertificationsBucket();
+                String storageUri = supabaseStorageService.uploadFile(bucket, safeStorageName, fileBytes, expectedMimeType);
+                log.info("Certificate file uploaded to persistent Supabase Storage: {}", storageUri);
+                return new StoredFileInfo(safeStorageName, originalFilename, expectedMimeType, file.getSize(), storageUri);
+            }
+
+            // 2. Local disk fallback for offline / development environments
+            Path targetLocation = this.storageLocation.resolve(safeStorageName).normalize();
             if (!targetLocation.startsWith(this.storageLocation)) {
                 throw new ApiException("Cannot store file outside current storage directory.", HttpStatus.BAD_REQUEST);
             }
 
-            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+            Files.write(targetLocation, fileBytes, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             return new StoredFileInfo(safeStorageName, originalFilename, expectedMimeType, file.getSize(), targetLocation.toString());
         } catch (IOException e) {
             log.error("Failed to store certificate file: {}", e.getMessage());
@@ -257,14 +284,26 @@ public class CertificationService {
 
     private void deletePhysicalFile(String storagePath) {
         if (storagePath == null || storagePath.isBlank()) return;
+
+        // Delete from Supabase Storage if URI
+        if (SupabaseStorageService.isSupabaseStoragePath(storagePath)) {
+            String[] parsed = SupabaseStorageService.parseSupabaseUri(storagePath);
+            if (parsed != null && supabaseStorageService.isConfigured()) {
+                supabaseStorageService.deleteFile(parsed[0], parsed[1]);
+                log.info("Deleted certificate from Supabase Storage: bucket='{}', path='{}'", parsed[0], parsed[1]);
+            }
+            return;
+        }
+
+        // Delete from local disk fallback
         try {
             Path filePath = Paths.get(storagePath).normalize();
-            if (filePath.startsWith(this.storageLocation)) {
+            if (this.storageLocation != null && filePath.startsWith(this.storageLocation)) {
                 Files.deleteIfExists(filePath);
-                log.debug("Deleted physical certificate file: {}", filePath);
+                log.debug("Deleted local certificate file: {}", filePath);
             }
         } catch (IOException e) {
-            log.warn("Could not delete physical certificate file '{}': {}", storagePath, e.getMessage());
+            log.warn("Could not delete local certificate file '{}': {}", storagePath, e.getMessage());
         }
     }
 

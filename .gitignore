@@ -43,3 +43,5 @@ pnpm-debug.log*
 # Local backend data
 backend/data/
 backend/data-backup/
+portfolio-backup.git/
+

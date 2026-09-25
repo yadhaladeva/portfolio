@@ -37,6 +37,7 @@ public class ResumeService {
     private static final long MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 
     private final ResumeRepository resumeRepository;
+    private final SupabaseStorageService supabaseStorageService;
 
     @Value("${resume.upload.dir:./data/uploads/resume}")
     private String uploadDir;
@@ -48,10 +49,9 @@ public class ResumeService {
         this.storageLocation = Paths.get(uploadDir).toAbsolutePath().normalize();
         try {
             Files.createDirectories(this.storageLocation);
-            log.info("Resume storage initialized at: {}", this.storageLocation);
+            log.info("Resume local storage initialized at: {}", this.storageLocation);
         } catch (IOException e) {
-            log.error("Could not initialize resume storage directory: {}", e.getMessage());
-            throw new ApiException("Could not initialize resume storage directory", HttpStatus.INTERNAL_SERVER_ERROR);
+            log.warn("Could not initialize resume local directory: {}", e.getMessage());
         }
     }
 
@@ -95,12 +95,21 @@ public class ResumeService {
         }
 
         try {
-            // Generate safe internal file storage name
             String safeStorageName = "resume_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8) + ".pdf";
-            Path targetLocation = this.storageLocation.resolve(safeStorageName);
+            byte[] fileBytes = file.getBytes();
+            String storagePathValue;
 
-            // Copy file content
-            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+            // 1. If Supabase Storage is configured, store persistently in Supabase
+            if (supabaseStorageService.isConfigured()) {
+                String bucket = supabaseStorageService.getResumesBucket();
+                storagePathValue = supabaseStorageService.uploadFile(bucket, safeStorageName, fileBytes, "application/pdf");
+                log.info("Resume uploaded to persistent Supabase Storage: {}", storagePathValue);
+            } else {
+                // 2. Local disk fallback
+                Path targetLocation = this.storageLocation.resolve(safeStorageName);
+                Files.write(targetLocation, fileBytes, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                storagePathValue = targetLocation.toString();
+            }
 
             // Deactivate existing active resumes
             List<Resume> activeResumes = resumeRepository.findAll().stream()
@@ -119,7 +128,7 @@ public class ResumeService {
                     .originalFileName(originalFilename)
                     .contentType("application/pdf")
                     .fileSize(file.getSize())
-                    .storagePath(targetLocation.toString())
+                    .storagePath(storagePathValue)
                     .active(true)
                     .build();
 
@@ -134,13 +143,28 @@ public class ResumeService {
     }
 
     public Resource loadResumeResource(Resume resume) {
+        // Check if stored in Supabase Cloud Storage
+        if (SupabaseStorageService.isSupabaseStoragePath(resume.getStoragePath())) {
+            String[] parsed = SupabaseStorageService.parseSupabaseUri(resume.getStoragePath());
+            if (parsed != null && supabaseStorageService.isConfigured()) {
+                byte[] bytes = supabaseStorageService.downloadFile(parsed[0], parsed[1]);
+                return new org.springframework.core.io.ByteArrayResource(bytes) {
+                    @Override
+                    public String getFilename() {
+                        return resume.getFileName() != null ? resume.getFileName() : "resume.pdf";
+                    }
+                };
+            }
+        }
+
+        // Local storage fallback
         try {
             Path filePath = Paths.get(resume.getStoragePath()).normalize();
             Resource resource = new UrlResource(filePath.toUri());
             if (resource.exists() && resource.isReadable()) {
                 return resource;
             } else {
-                throw new ResourceNotFoundException("Resume file not found on disk: " + resume.getFileName());
+                throw new ResourceNotFoundException("Resume file not found: " + resume.getFileName());
             }
         } catch (MalformedURLException e) {
             throw new ResourceNotFoundException("Resume file location is invalid.");
@@ -152,12 +176,21 @@ public class ResumeService {
         Resume resume = resumeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Resume with ID " + id + " not found."));
 
-        // Remove file from disk
-        try {
-            Path filePath = Paths.get(resume.getStoragePath());
-            Files.deleteIfExists(filePath);
-        } catch (IOException e) {
-            log.warn("Could not delete resume physical file: {}", e.getMessage());
+        // Delete from Supabase Storage if URI
+        if (SupabaseStorageService.isSupabaseStoragePath(resume.getStoragePath())) {
+            String[] parsed = SupabaseStorageService.parseSupabaseUri(resume.getStoragePath());
+            if (parsed != null && supabaseStorageService.isConfigured()) {
+                supabaseStorageService.deleteFile(parsed[0], parsed[1]);
+                log.info("Deleted resume from Supabase Storage: bucket='{}', path='{}'", parsed[0], parsed[1]);
+            }
+        } else {
+            // Remove file from local disk
+            try {
+                Path filePath = Paths.get(resume.getStoragePath());
+                Files.deleteIfExists(filePath);
+            } catch (IOException e) {
+                log.warn("Could not delete resume local file: {}", e.getMessage());
+            }
         }
 
         resumeRepository.delete(resume);

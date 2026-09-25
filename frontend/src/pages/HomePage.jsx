@@ -34,35 +34,64 @@ export const HomePage = () => {
     setToast({ type, message });
   };
 
+  const CACHE_KEY = 'deva_portfolio_bundle_cache';
+
+  const applyBundle = (bundle) => {
+    if (!bundle) return;
+    if (bundle.header) setHeaderConfig(bundle.header);
+    if (bundle.hero) setHero(bundle.hero);
+    if (bundle.about) setAbout(bundle.about);
+    if (bundle.skillsHeader) setSkillsHeader(bundle.skillsHeader);
+    if (bundle.groupedSkills) setGroupedSkills(bundle.groupedSkills);
+    if (bundle.skills) setSkills(bundle.skills);
+    if (bundle.experienceHeader) setExperienceHeader(bundle.experienceHeader);
+    if (bundle.experience) setExperience(bundle.experience);
+    if (bundle.projectsHeader) setProjectsHeader(bundle.projectsHeader);
+    if (bundle.projects) setProjects(bundle.projects);
+    if (bundle.certificationsHeader) setCertificationsHeader(bundle.certificationsHeader);
+    if (bundle.certifications) setCertifications(bundle.certifications);
+    if (bundle.contact) setContactSettings(bundle.contact);
+  };
+
   useEffect(() => {
-    // Show cold start notice if backend takes more than 2.5s
+    // 1. Instant Cache Hydration: if cached data exists, render immediately without waiting
+    let hasHydratedFromCache = false;
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && typeof parsed === 'object') {
+          applyBundle(parsed);
+          setIsLoading(false);
+          hasHydratedFromCache = true;
+        }
+      }
+    } catch (e) {
+      console.warn('Could not read cached portfolio bundle', e);
+    }
+
+    // Show cold start notice if backend takes more than 2.5s and no cache is present
     const slowTimer = setTimeout(() => {
-      setIsSlowLoading(true);
+      if (!hasHydratedFromCache) {
+        setIsSlowLoading(true);
+      }
     }, 2500);
 
     const fetchPortfolioData = async () => {
       try {
-        // Single consolidated API request replaces 13 individual calls
+        // Single consolidated API request
         const bundle = await publicApi.getPublicPortfolio();
 
         if (bundle) {
-          if (bundle.header) setHeaderConfig(bundle.header);
-          if (bundle.hero) setHero(bundle.hero);
-          if (bundle.about) setAbout(bundle.about);
-          if (bundle.skillsHeader) setSkillsHeader(bundle.skillsHeader);
-          setGroupedSkills(bundle.groupedSkills || []);
-          setSkills(bundle.skills || []);
-          if (bundle.experienceHeader) setExperienceHeader(bundle.experienceHeader);
-          setExperience(bundle.experience || []);
-          if (bundle.projectsHeader) setProjectsHeader(bundle.projectsHeader);
-          setProjects(bundle.projects || []);
-          if (bundle.certificationsHeader) setCertificationsHeader(bundle.certificationsHeader);
-          setCertifications(bundle.certifications || []);
-          if (bundle.contact) setContactSettings(bundle.contact);
+          applyBundle(bundle);
+          try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify(bundle));
+          } catch (storageErr) {
+            console.warn('Could not save portfolio cache', storageErr);
+          }
         }
       } catch (err) {
         console.warn('Consolidated bundle fetch failed, attempting fallback...', err);
-        // Resilient fallback to individual endpoints if bundle endpoint is unavailable
         try {
           const [
             headerData,

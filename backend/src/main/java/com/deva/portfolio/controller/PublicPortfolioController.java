@@ -49,7 +49,9 @@ public class PublicPortfolioController {
                 .contact(contactSettingsService.getContactSettings())
                 .build();
 
-        return ResponseEntity.ok(ApiResponse.success(bundle));
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CACHE_CONTROL, "public, max-age=60, stale-while-revalidate=300")
+                .body(ApiResponse.success(bundle));
     }
 
     @Operation(summary = "Get Section Header by Key", description = "Fetches published badge text and description for a specific section (SKILLS, EXPERIENCE, PROJECTS, CERTIFICATIONS).")
