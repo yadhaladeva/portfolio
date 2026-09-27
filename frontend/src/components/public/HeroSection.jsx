@@ -56,7 +56,7 @@ const ACCENT_STYLES = {
 const DEFAULT_HERO = {
   greeting: "Hi, I'm",
   name: "Deva Yadhala",
-  role: "Software Developer",
+  role: "Software Engineer",
   description: "Specializing in Java, Spring Boot, Python, SQL, and data analytics, with experience building REST APIs, database-driven applications, and data visualization solutions. I apply strong programming and analytical skills to develop scalable, maintainable software.",
   primaryButtonText: "View Resume",
   primaryButtonVisible: true,

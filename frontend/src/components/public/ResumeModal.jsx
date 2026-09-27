@@ -56,7 +56,7 @@ export const ResumeModal = ({ isOpen, onClose }) => {
                   {activeResume.fileName}
                 </span>
               ) : (
-                'Full-Stack Software Developer'
+                'Software Engineer'
               )}
             </p>
           </div>
@@ -115,7 +115,7 @@ export const ResumeModal = ({ isOpen, onClose }) => {
         ) : activeResume ? (
           <div className="w-full rounded-xl overflow-hidden border border-slate-800 bg-slate-950 shadow-2xl">
             <iframe
-              src={`${publicApi.getResumePreviewUrl()}#toolbar=1&navpanes=0`}
+              src={`${publicApi.getResumePreviewUrl()}#toolbar=0&navpanes=0&scrollbar=1`}
               title="Deva Yadhala Resume"
               className="w-full h-[72vh] rounded-xl bg-white border-0"
             >

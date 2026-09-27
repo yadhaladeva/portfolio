@@ -47,6 +47,14 @@ public class SupabaseStorageService {
     public void init() {
         if (StringUtils.hasText(rawSupabaseUrl) && StringUtils.hasText(supabaseKey)) {
             this.supabaseBaseUrl = rawSupabaseUrl.trim().replaceAll("/+$", "");
+            String key = supabaseKey.trim();
+            if ((key.startsWith("\"") && key.endsWith("\"")) || (key.startsWith("'") && key.endsWith("'"))) {
+                key = key.substring(1, key.length() - 1).trim();
+            }
+            if (key.toLowerCase().startsWith("bearer ")) {
+                key = key.substring(7).trim();
+            }
+            this.supabaseKey = key;
             this.httpClient = HttpClient.newBuilder()
                     .connectTimeout(Duration.ofSeconds(10))
                     .build();

@@ -42,53 +42,80 @@ export const ExperienceSection = ({ experience = [], header }) => {
         </div>
 
         {/* Timeline Container */}
-        <div className="relative border-l-2 border-slate-800 ml-4 sm:ml-8 space-y-12">
-          {experience.map((item, index) => (
-            <div key={item.id || index} className="relative pl-8 sm:pl-10 group">
-              {/* Timeline Marker Dot */}
-              <div className="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-dark-900 border-2 border-emerald-400 flex items-center justify-center group-hover:scale-125 group-hover:border-cyan-400 transition-all shadow-md shadow-emerald-400/20">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              </div>
+        <div className="relative pl-7 sm:pl-10 space-y-8 sm:space-y-10">
+          {/* Subtle Continuous 2px Timeline Line centered behind markers */}
+          <div
+            className="absolute left-[7px] sm:left-[15px] top-[38px] bottom-[38px] w-[2px] bg-slate-800/90 pointer-events-none"
+            aria-hidden="true"
+          />
 
-              {/* Experience Card */}
-              <div className="glass-card p-6 sm:p-7 rounded-2xl glass-card-hover border border-slate-800">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-4 border-b border-slate-800/80">
-                  <div>
-                    <h3 className="text-lg sm:text-xl font-bold text-white font-display flex items-center gap-2">
-                      <span>{item.role}</span>
-                    </h3>
-                    <div className="flex items-center gap-2 text-emerald-400 text-sm font-medium mt-1">
-                      <Building2 className="w-4 h-4 shrink-0" />
-                      <span>{item.organization}</span>
-                    </div>
-                  </div>
+          {experience.map((item, index) => {
+            const isCurrent = Boolean(
+              (item.endDate && (item.endDate.toLowerCase().includes('present') || item.endDate.toLowerCase().includes('current'))) ||
+              item.current ||
+              index === 0
+            );
 
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400 font-mono">
-                    <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-dark-800 border border-slate-700/60">
-                      <Calendar className="w-3.5 h-3.5 text-cyan-400" />
-                      <span>{item.startDate} – {item.endDate || 'Present'}</span>
-                    </div>
-                    {item.location && (
-                      <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-dark-800 border border-slate-700/60">
-                        <MapPin className="w-3.5 h-3.5 text-rose-400" />
-                        <span>{item.location}</span>
-                      </div>
-                    )}
-                  </div>
+            return (
+              <div key={item.id || index} className="relative group">
+                {/* Timeline Marker Dot (Centered with Card Header Title) */}
+                <div
+                  className={`absolute left-[-28px] sm:left-[-32px] top-[30px] sm:top-[34px] w-4 h-4 rounded-full bg-dark-950 flex items-center justify-center transition-all duration-300 z-10 ${
+                    isCurrent
+                      ? 'border-2 border-emerald-400 ring-4 ring-emerald-500/15 shadow-sm shadow-emerald-500/20'
+                      : 'border-2 border-slate-700 group-hover:border-emerald-400/80'
+                  }`}
+                  aria-hidden="true"
+                >
+                  <span
+                    className={`rounded-full transition-colors ${
+                      isCurrent
+                        ? 'w-1.5 h-1.5 bg-emerald-400'
+                        : 'w-1.5 h-1.5 bg-slate-500 group-hover:bg-emerald-400'
+                    }`}
+                  />
                 </div>
 
-                {/* Bullet Points List */}
-                <ul className="space-y-2.5 text-sm text-slate-300 leading-relaxed">
-                  {parseBulletPoints(item.description).map((point, idx) => (
-                    <li key={idx} className="flex items-start gap-2.5">
-                      <span className="text-slate-400 font-bold select-none mt-0.5 leading-none">•</span>
-                      <span className="flex-1">{point}</span>
-                    </li>
-                  ))}
-                </ul>
+                {/* Experience Card */}
+                <div className="glass-card p-6 sm:p-7 rounded-2xl glass-card-hover border border-slate-800">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-4 border-b border-slate-800/80">
+                    <div>
+                      <h3 className="text-lg sm:text-xl font-bold text-white font-display flex items-center gap-2">
+                        <span>{item.role}</span>
+                      </h3>
+                      <div className="flex items-center gap-2 text-emerald-400 text-sm font-medium mt-1">
+                        <Building2 className="w-4 h-4 shrink-0" />
+                        <span>{item.organization}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400 font-mono">
+                      <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-dark-800 border border-slate-700/60">
+                        <Calendar className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>{item.startDate} – {item.endDate || 'Present'}</span>
+                      </div>
+                      {item.location && (
+                        <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-dark-800 border border-slate-700/60">
+                          <MapPin className="w-3.5 h-3.5 text-rose-400" />
+                          <span>{item.location}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Bullet Points List */}
+                  <ul className="space-y-2.5 text-sm text-slate-300 leading-relaxed">
+                    {parseBulletPoints(item.description).map((point, idx) => (
+                      <li key={idx} className="flex items-start gap-2.5">
+                        <span className="text-slate-400 font-bold select-none mt-0.5 leading-none">•</span>
+                        <span className="flex-1">{point}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

@@ -23,11 +23,10 @@ spring:
     url: ${DB_URL:jdbc:h2:file:./data/portfolio_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL}
     username: ${DB_USERNAME:sa}
     password: ${DB_PASSWORD:}
-    driver-class-name: org.postgresql.Driver
+    driver-class-name: ${DB_DRIVER:org.h2.Driver}
   jpa:
-    # Auto-detected by Hibernate from JDBC connection metadata (PostgreSQL in cloud, H2 locally), or overridable via DB_PLATFORM
     hibernate:
-      ddl-auto: update
+      ddl-auto: ${DDL_AUTO:update}
     show-sql: false
     open-in-view: false
     properties:
@@ -54,9 +53,9 @@ jwt:
 # Set via environment variables. If password is empty, seeding is skipped.
 admin:
   initial:
-    username: ${ADMIN_INITIAL_USERNAME:devayadhala}
-    email: ${ADMIN_INITIAL_EMAIL:devayadhala04@gmail.com}
-    password: ${ADMIN_INITIAL_PASSWORD:BhavyaSri@07}
+    username: ${ADMIN_INITIAL_USERNAME:}
+    email: ${ADMIN_INITIAL_EMAIL:}
+    password: ${ADMIN_INITIAL_PASSWORD:}
 
 # CORS Configuration
 cors:
