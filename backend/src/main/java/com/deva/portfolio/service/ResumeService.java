@@ -198,6 +198,20 @@ public class ResumeService {
     }
 
     private ResumeResponse mapToResponse(Resume resume) {
+        String downloadUrl = "/api/resume/download";
+        String previewUrl = "/api/resume/preview";
+
+        if (SupabaseStorageService.isSupabaseStoragePath(resume.getStoragePath())) {
+            String[] parsed = SupabaseStorageService.parseSupabaseUri(resume.getStoragePath());
+            if (parsed != null && supabaseStorageService.isConfigured()) {
+                String publicUrl = supabaseStorageService.getPublicUrl(parsed[0], parsed[1]);
+                if (StringUtils.hasText(publicUrl)) {
+                    downloadUrl = publicUrl;
+                    previewUrl = publicUrl;
+                }
+            }
+        }
+
         return ResumeResponse.builder()
                 .id(resume.getId())
                 .fileName(resume.getFileName())
@@ -208,8 +222,8 @@ public class ResumeService {
                 .active(resume.getActive())
                 .uploadedAt(resume.getUploadedAt())
                 .updatedAt(resume.getUpdatedAt())
-                .downloadUrl("/api/resume/download")
-                .previewUrl("/api/resume/preview")
+                .downloadUrl(downloadUrl)
+                .previewUrl(previewUrl)
                 .build();
     }
 }

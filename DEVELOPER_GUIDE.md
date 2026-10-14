@@ -126,9 +126,27 @@ Whenever setting up a new environment or deploying on Render, ensure these envir
 | `ADMIN_INITIAL_EMAIL` | `devayadhala04@gmail.com` |
 | `ADMIN_INITIAL_PASSWORD` | *(Your Private Admin Password)* |
 
+### 🌐 Vercel (Frontend) Environment Variables Checklist
+Set these in **Vercel Dashboard → Project Settings → Environment Variables**:
+
+| Variable Key | Description / Example |
+| :--- | :--- |
+| `VITE_SUPABASE_URL` | `https://dizyqymwvpibkqtntzbe.supabase.co` |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | *(Your Supabase `anon` / public publishable API Key)* |
+| `VITE_API_BASE_URL` | `https://your-backend-service.onrender.com/api` (Render backend API for Admin CMS) |
+
 ---
 
-## 6. Useful Troubleshooting Commands
+## 6. Supabase Row Level Security (RLS) Setup
+Before deploying to production, run the provided SQL script in your **Supabase Dashboard → SQL Editor**:
+1. Open the file `supabase-rls-setup.sql` in the project root.
+2. Copy the entire contents.
+3. Paste into **Supabase SQL Editor** and click **Run**.
+4. This ensures public visitors can only read published portfolio content and direct storage files, while protecting admin credentials and private messages.
+
+---
+
+## 7. Useful Troubleshooting Commands
 
 ### Port Already in Use?
 If port `8080` (backend) or `5173` (frontend) is already running and blocked:

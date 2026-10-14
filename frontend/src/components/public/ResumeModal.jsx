@@ -34,7 +34,7 @@ export const ResumeModal = ({ isOpen, onClose }) => {
       return;
     }
     // Direct browser download of active PDF
-    const downloadUrl = publicApi.getResumeDownloadUrl();
+    const downloadUrl = publicApi.getResumeDownloadUrl(activeResume);
     const link = document.createElement('a');
     link.href = downloadUrl;
     link.setAttribute('download', activeResume.fileName || 'Deva_Yadhala_Resume.pdf');
@@ -64,7 +64,7 @@ export const ResumeModal = ({ isOpen, onClose }) => {
             {activeResume && (
               <>
                 <a
-                  href={publicApi.getResumePreviewUrl()}
+                  href={publicApi.getResumePreviewUrl(activeResume)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-dark-800 hover:bg-dark-750 text-slate-200 hover:text-white border border-slate-700 hover:border-cyan-500/40 transition-colors flex items-center gap-1.5"
@@ -115,14 +115,14 @@ export const ResumeModal = ({ isOpen, onClose }) => {
         ) : activeResume ? (
           <div className="w-full rounded-xl overflow-hidden border border-slate-800 bg-slate-950 shadow-2xl">
             <iframe
-              src={`${publicApi.getResumePreviewUrl()}#toolbar=0&navpanes=0&scrollbar=1`}
+              src={`${publicApi.getResumePreviewUrl(activeResume)}#toolbar=0&navpanes=0&scrollbar=1`}
               title="Deva Yadhala Resume"
               className="w-full h-[72vh] rounded-xl bg-white border-0"
             >
               <div className="p-8 text-center text-slate-300 space-y-3">
                 <p className="text-sm">Your browser does not support embedded PDF viewing.</p>
                 <a
-                  href={publicApi.getResumeDownloadUrl()}
+                  href={publicApi.getResumeDownloadUrl(activeResume)}
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500 text-slate-950 font-semibold text-xs"
                 >
                   <Download className="w-4 h-4" />

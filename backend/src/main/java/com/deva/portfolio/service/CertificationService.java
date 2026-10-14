@@ -68,7 +68,7 @@ public class CertificationService {
     public List<CertificationResponse> getAllCertifications() {
         return certificationRepository.findAllByOrderByDisplayOrderAsc()
                 .stream()
-                .map(CertificationResponse::fromEntity)
+                .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
@@ -76,7 +76,7 @@ public class CertificationService {
     public CertificationResponse getCertificationById(Long id) {
         Certification cert = certificationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Certification", "id", id));
-        return CertificationResponse.fromEntity(cert);
+        return mapToResponse(cert);
     }
 
     @Transactional
@@ -101,7 +101,7 @@ public class CertificationService {
 
         Certification saved = certificationRepository.save(cert);
         log.info("Created certification ID {} ('{}')", saved.getId(), saved.getName());
-        return CertificationResponse.fromEntity(saved);
+        return mapToResponse(saved);
     }
 
     @Transactional
@@ -145,7 +145,7 @@ public class CertificationService {
         }
 
         Certification updated = certificationRepository.save(cert);
-        return CertificationResponse.fromEntity(updated);
+        return mapToResponse(updated);
     }
 
     @Transactional
@@ -163,7 +163,7 @@ public class CertificationService {
 
         Certification updated = certificationRepository.save(cert);
         log.info("Removed certificate file only for certification ID {}", id);
-        return CertificationResponse.fromEntity(updated);
+        return mapToResponse(updated);
     }
 
     @Transactional
@@ -364,6 +364,21 @@ public class CertificationService {
         } catch (IOException e) {
             log.warn("Could not inspect file signature: {}", e.getMessage());
         }
+    }
+
+    private CertificationResponse mapToResponse(Certification cert) {
+        if (cert == null) return null;
+        CertificationResponse resp = CertificationResponse.fromEntity(cert);
+        if (resp != null && Boolean.TRUE.equals(resp.getHasCertificate()) && SupabaseStorageService.isSupabaseStoragePath(cert.getStoragePath())) {
+            String[] parsed = SupabaseStorageService.parseSupabaseUri(cert.getStoragePath());
+            if (parsed != null && supabaseStorageService.isConfigured()) {
+                String publicUrl = supabaseStorageService.getPublicUrl(parsed[0], parsed[1]);
+                if (StringUtils.hasText(publicUrl)) {
+                    resp.setCertificateUrl(publicUrl);
+                }
+            }
+        }
+        return resp;
     }
 
     public record StoredFileInfo(String safeStorageName, String originalFileName, String contentType, Long fileSize, String storagePath) {}
