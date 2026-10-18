@@ -225,7 +225,17 @@ export const publicApi = {
     return res.data.data;
   },
   submitContact: async (data) => {
-    // Contact submissions continue routing through Spring Boot for verification & persistence
+    // 1. Prioritize direct Supabase insertion for instant sub-second submission
+    //    with ZERO reliance on Render cold-starts or backend sleep state.
+    if (isSupabaseConfigured()) {
+      try {
+        return await supabasePublicApi.submitContact(data);
+      } catch (err) {
+        console.warn('[Data Access] Supabase direct contact submission failed, falling back to backend API:', err);
+      }
+    }
+
+    // 2. Fallback to Spring Boot REST endpoint on Render
     const res = await apiClient.post('/contact', data);
     return res.data;
   },

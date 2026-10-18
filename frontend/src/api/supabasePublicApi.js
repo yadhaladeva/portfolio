@@ -490,6 +490,40 @@ export const supabasePublicApi = {
   },
 
   // --------------------------------------------------------------------------
+  // Submit Contact Inquiry (Direct Supabase Insertion)
+  // --------------------------------------------------------------------------
+  submitContact: async (formData) => {
+    if (!isSupabaseConfigured()) {
+      throw new Error('Supabase client not configured');
+    }
+
+    const payload = {
+      name: formData.name ? formData.name.trim() : '',
+      email: formData.email ? formData.email.trim().toLowerCase() : '',
+      subject: formData.subject && formData.subject.trim() ? formData.subject.trim() : 'General Inquiry',
+      message: formData.message ? formData.message.trim() : '',
+      status: 'UNREAD',
+      created_at: new Date().toISOString(),
+    };
+
+    // Direct insertion into contact_messages table in Supabase.
+    // Note: We deliberately do not chain .select() so it works under an INSERT-only RLS policy.
+    const { error } = await supabase
+      .from('contact_messages')
+      .insert([payload]);
+
+    if (error) {
+      throw error;
+    }
+
+    return {
+      success: true,
+      message: 'Thank you for reaching out! Your message has been sent.',
+      data: payload,
+    };
+  },
+
+  // --------------------------------------------------------------------------
   // Consolidated Full Portfolio Bundle (High Performance Direct Read)
   // --------------------------------------------------------------------------
   getPublicPortfolio: async () => {

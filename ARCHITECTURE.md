@@ -53,7 +53,8 @@ Comprehensive architectural overview and data flow documentation for the full-st
 |    - contact_settings, header_configs        | |    (Zero backend latency / No Render wake-up needed)   |
 |  - Private Tables (No public read):          | |                                                        |
 |    - admin_users (BCrypt hashes)             | |                                                        |
-|    - contact_messages (Visitor inquiries)    | |                                                        |
+|    - contact_messages (Public INSERT allowed,| |                                                        |
+|      strict zero public SELECT read access)  | |                                                        |
 +----------------------------------------------+ +--------------------------------------------------------+
 ```
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Mail, Send, MapPin, Linkedin, Github, Phone, CheckCircle2, AlertCircle } from 'lucide-react';
 import { publicApi } from '../../api/publicApi';
 import { Footer } from '../common/Footer';
@@ -32,7 +32,28 @@ export const ContactSection = ({ contactSettings, onShowToast }) => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [countdown, setCountdown] = useState(4);
   const [errorMsg, setErrorMsg] = useState(null);
+
+  // Auto-reset back to initial form stage after ~4 seconds
+  useEffect(() => {
+    let timer;
+    let interval;
+    if (submitted) {
+      setCountdown(4);
+      interval = setInterval(() => {
+        setCountdown((prev) => (prev > 1 ? prev - 1 : 1));
+      }, 1000);
+
+      timer = setTimeout(() => {
+        setSubmitted(false);
+      }, 4000);
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+      if (interval) clearInterval(interval);
+    };
+  }, [submitted]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -201,7 +222,7 @@ export const ContactSection = ({ contactSettings, onShowToast }) => {
           <div className="lg:col-span-7 flex flex-col">
             <div className="glass-card p-6 rounded-2xl flex-1 flex flex-col justify-between border border-slate-800">
               {submitted ? (
-                <div className="text-center py-8 space-y-3.5 my-auto">
+                <div className="text-center py-8 space-y-3.5 my-auto animate-fade-in">
                   <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto">
                     <CheckCircle2 className="w-7 h-7" />
                   </div>
@@ -211,7 +232,11 @@ export const ContactSection = ({ contactSettings, onShowToast }) => {
                   <p className="text-xs text-slate-300 max-w-sm mx-auto">
                     Thank you for reaching out. Your inquiry has been saved securely. I will get back to you as soon as possible.
                   </p>
+                  <p className="text-[11px] text-slate-400">
+                    Returning to form in <span className="text-emerald-400 font-semibold">{countdown}s</span>...
+                  </p>
                   <button
+                    type="button"
                     onClick={() => setSubmitted(false)}
                     className="px-4 py-2 rounded-xl text-xs font-semibold bg-dark-800 hover:bg-dark-750 text-emerald-400 border border-slate-700 transition-colors mt-2 cursor-pointer"
                   >

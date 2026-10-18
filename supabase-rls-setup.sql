@@ -58,6 +58,7 @@ DROP POLICY IF EXISTS "Public read resumes" ON resumes;
 DROP POLICY IF EXISTS "Public read contact_settings" ON contact_settings;
 DROP POLICY IF EXISTS "Public read admin_users" ON admin_users;
 DROP POLICY IF EXISTS "Public read contact_messages" ON contact_messages;
+DROP POLICY IF EXISTS "Public insert contact_messages" ON contact_messages;
 
 -- ------------------------------------------------------------------------------
 -- 3. CREATE PUBLIC SELECT POLICIES (Least Privilege Read-Only)
@@ -171,8 +172,19 @@ CREATE POLICY "Public read contact_settings"
 -- Only the backend connection (postgres / service_role) can access this table.
 
 -- contact_messages: Private visitor messages sent to admin.
--- No SELECT policy is created for anon or authenticated.
--- Only the backend connection (postgres / service_role) can access this table.
+-- 1. STRICT PRIVACY: Zero public read access. No SELECT policy for anon or authenticated.
+--    Only the backend / service_role connection can read messages.
+-- 2. RESILIENT SUBMISSION: Allow visitors to insert inquiries directly so contact form
+--    works with zero latency, even if the Render backend is sleeping or inactive.
+DROP POLICY IF EXISTS "Public insert contact_messages" ON contact_messages;
+CREATE POLICY "Public insert contact_messages"
+  ON contact_messages FOR INSERT
+  TO anon, authenticated
+  WITH CHECK (true);
+
+-- Ensure permission is granted to insert into contact_messages and use sequences
+GRANT INSERT ON TABLE contact_messages TO anon, authenticated;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
 
 -- ------------------------------------------------------------------------------
 -- 5. STORAGE BUCKET POLICIES (Public read for resumes and certificates)
